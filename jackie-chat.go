@@ -1,14 +1,14 @@
 package main
 
 import (
-	//"github.com/shootnix/jackie-chat-2/config"
+	"github.com/shootnix/jackie-chat-2/config"
 	"github.com/shootnix/jackie-chat-2/daemon"
 	//"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
 )
 
 func main() {
-	//conf := config.GetConfig()
+	_ = config.GetConfig()
 	//pg := io.GetPg()
 	//defer pg.Conn.Close()
 

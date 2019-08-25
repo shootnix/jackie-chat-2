@@ -175,7 +175,7 @@ func SendMessage(c *gin.Context) {
 	}
 
 	log.Debug("User " + user.Name + " is about to send a message #" + strconv.FormatInt(m.ID, 10))
-	go m.Send("Telegram")
+	_ = m.Send("Telegram")
 
 	c.JSON(http.StatusCreated, gin.H{"id": m.ID})
 }
