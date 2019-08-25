@@ -3,22 +3,20 @@ package main
 import (
 	"github.com/shootnix/jackie-chat-2/config"
 	"github.com/shootnix/jackie-chat-2/daemon"
-	//"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
+	"github.com/shootnix/jackie-chat-2/queue"
+	"github.com/shootnix/jackie-chat-2/worker"
+	"time"
 )
 
 func main() {
 	_ = config.GetConfig()
-	//pg := io.GetPg()
-	//defer pg.Conn.Close()
 
-	log := logger.GetLogger()
+	logger.GetLogger()
+	queue.GetQueue()
 
-	//log.Debug(conf.Database.Pg.DBName)
-	//log.Error("Oops...")
-
-	log.Debug("======>>>>>")
-	log.Info(">>>>>>>>>>>")
+	worker := worker.NewWorker(1 * time.Second)
+	go worker.Run()
 
 	daemon.NewDaemon().Run()
 }

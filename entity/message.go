@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
+	"github.com/shootnix/jackie-chat-2/queue"
 	"strconv"
 )
 
@@ -40,9 +41,9 @@ func GetMessage(id int64) (*Message, error) {
                is_success,
                err,
                bot_id,
-               user_id,
+               user_id
           FROM messages
-         WHERE id = ?
+         WHERE id = $1
 
     `
 	row := io.GetPg().Conn.QueryRow(sql, id)
@@ -115,7 +116,10 @@ func (m *Message) Send(to string) error {
 	msgIDStr := strconv.FormatInt(m.ID, 10)
 	log.Debug("Trying to send message #" + msgIDStr + " via " + to + "...")
 
-	switch to {
+	q := queue.GetQueue()
+	q <- m.ID
+
+	/*switch to {
 	case "Telegram":
 		if err := m.sendToTelegram(); err != nil {
 			log.Error("Can't send message #" + msgIDStr + " via Telegram: " + err.Error())
@@ -123,32 +127,35 @@ func (m *Message) Send(to string) error {
 		}
 	default:
 		return errors.New("Unknown transport: " + to)
-	}
+	}*/
 
 	return nil
 }
 
+/*
 func (m *Message) sendToTelegram() error {
 	bot, err := GetTelegramBot(m.BotID)
 	if err != nil {
 		return err
 	}
 
-	tgm, err := io.NewTelegramBotAPI(bot.Token, m.Message, m.ChatID, m.ParseMode)
-	if err != nil {
-		return err
-	}
+	//tgm, err := io.NewTelegramBotAPI(bot.Token, m.Message, m.ChatID, m.ParseMode)
+	//if err != nil {
+	//	return err
+	//}
 
-	if err := tgm.SendMessage(); err != nil {
-		return err
-	}
+	/*
+		if err := tgm.SendMessage(); err != nil {
+			return err
+		}
 
-	m.IsSuccess = 1
-	m.Err = ""
-	m.Update()
+		m.IsSuccess = 1
+		m.Err = ""
+		m.Update()
 
-	log := logger.GetLogger()
-	log.Debug("... Success! Message #" + strconv.FormatInt(m.ID, 10) + " has been sent via Telegram")
+		log := logger.GetLogger()
+		log.Debug("... Success! Message #" + strconv.FormatInt(m.ID, 10) + " has been sent via Telegram")
+*/
 
-	return nil
-}
+//	return nil
+//}

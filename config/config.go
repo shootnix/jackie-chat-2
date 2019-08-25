@@ -27,6 +27,9 @@ type Config struct {
 		Error string `json:"error"`
 		Info  string `json:"info"`
 	}
+	Queue struct {
+		Size int `json:"size"`
+	}
 }
 
 var config *Config
