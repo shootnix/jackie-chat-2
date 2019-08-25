@@ -28,7 +28,8 @@ type Config struct {
 		Info  string `json:"info"`
 	}
 	Queue struct {
-		Size int `json:"size"`
+		Size               int `json:"size"`
+		WorkerTimeInterval int `json:"worker_time_interval"`
 	}
 }
 

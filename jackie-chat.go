@@ -10,12 +10,12 @@ import (
 )
 
 func main() {
-	_ = config.GetConfig()
+	cfg := config.GetConfig()
 
 	logger.GetLogger()
 	queue.GetQueue()
 
-	worker := worker.NewWorker(1 * time.Second)
+	worker := worker.NewWorker(time.Duration(cfg.Queue.WorkerTimeInterval) * time.Second)
 	go worker.Run()
 
 	daemon.NewDaemon().Run()
