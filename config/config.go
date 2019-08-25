@@ -40,8 +40,6 @@ func GetConfig() *Config {
 }
 
 func loadConfig() *Config {
-	log.Println(">>> loading config ...")
-
 	cfg := &Config{}
 	configFile, err := os.Open("/etc/jackiechat/jackiechat.conf")
 	if err != nil {
