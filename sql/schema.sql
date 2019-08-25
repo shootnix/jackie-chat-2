@@ -11,7 +11,7 @@ create table users (
     name text not null unique,
     password text not null,
     default_bot integer references telegram_bots(id),
-    is_active boolean,
+    is_active boolean default true,
     is_deleted boolean default false
 );
 
