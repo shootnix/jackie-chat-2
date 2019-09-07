@@ -11,11 +11,13 @@ import (
 
 type Worker struct {
 	timeInterval time.Duration
+	Name         string
 }
 
-func NewWorker(timeInt time.Duration) *Worker {
+func NewWorker(timeInt time.Duration, name string) *Worker {
 	w := new(Worker)
 	w.timeInterval = timeInt
+	w.Name = name
 
 	return w
 }
@@ -32,7 +34,7 @@ func (w *Worker) Run() {
 
 func (w *Worker) sendTgmMessage(id int64) {
 	log := logger.GetLogger()
-	log.Debug("SEND MESSAGE: " + strconv.FormatInt(id, 10))
+	log.Debug(w.Name + ": SENDING MESSAGE: " + strconv.FormatInt(id, 10))
 	m, err := entity.GetMessage(id)
 	if err != nil {
 		log.Error("Can't get message: " + err.Error())
@@ -61,4 +63,7 @@ func (w *Worker) sendTgmMessage(id int64) {
 	m.IsSuccess = 1
 	m.Err = ""
 	m.Update()
+
+	j := entity.NewJournal(w.Name, m.ID)
+	j.Insert()
 }

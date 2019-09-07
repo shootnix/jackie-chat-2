@@ -119,43 +119,5 @@ func (m *Message) Send(to string) error {
 	q := queue.GetQueue()
 	q <- m.ID
 
-	/*switch to {
-	case "Telegram":
-		if err := m.sendToTelegram(); err != nil {
-			log.Error("Can't send message #" + msgIDStr + " via Telegram: " + err.Error())
-			return err
-		}
-	default:
-		return errors.New("Unknown transport: " + to)
-	}*/
-
 	return nil
 }
-
-/*
-func (m *Message) sendToTelegram() error {
-	bot, err := GetTelegramBot(m.BotID)
-	if err != nil {
-		return err
-	}
-
-	//tgm, err := io.NewTelegramBotAPI(bot.Token, m.Message, m.ChatID, m.ParseMode)
-	//if err != nil {
-	//	return err
-	//}
-
-	/*
-		if err := tgm.SendMessage(); err != nil {
-			return err
-		}
-
-		m.IsSuccess = 1
-		m.Err = ""
-		m.Update()
-
-		log := logger.GetLogger()
-		log.Debug("... Success! Message #" + strconv.FormatInt(m.ID, 10) + " has been sent via Telegram")
-*/
-
-//	return nil
-//}

@@ -26,3 +26,10 @@ create table messages (
     user_id integer references users(id) on delete cascade,
     bot_id integer references telegram_bots(id) on delete set null
 );
+
+create table journal (
+    id serial primary key,
+    worker_name text not null,
+    ctime timestamp not null default now(),
+    message_id integer references messages(id) on delete cascade
+);

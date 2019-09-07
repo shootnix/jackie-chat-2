@@ -11,12 +11,16 @@ import (
 
 func main() {
 	cfg := config.GetConfig()
-
-	logger.GetLogger()
+	log := logger.GetLogger()
 	queue.GetQueue()
+	sleepInterval := time.Duration(int(cfg.Queue.WorkerTimeInterval/2)) * time.Second
 
-	worker := worker.NewWorker(time.Duration(cfg.Queue.WorkerTimeInterval) * time.Second)
-	go worker.Run()
+	for _, workerName := range cfg.Queue.Workers {
+		w := worker.NewWorker(time.Duration(cfg.Queue.WorkerTimeInterval)*time.Second, workerName)
+		log.Debug("Starting worker " + w.Name)
+		go w.Run()
+		time.Sleep(sleepInterval)
+	}
 
 	daemon.NewDaemon().Run()
 }
