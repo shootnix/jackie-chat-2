@@ -96,6 +96,14 @@ func (m *Message) Update() error {
 }
 
 func (m *Message) Insert() error {
+	if err := m.validate(); err != nil {
+		return err
+	}
+
+	if m.ParseMode == "" {
+		m.ParseMode = "html"
+	}
+
 	sql := `
 
         INSERT INTO messages (message, parse_mode, chat_id, bot_id, user_id, is_success, err)
@@ -106,6 +114,65 @@ func (m *Message) Insert() error {
 	row := io.GetPg().Conn.QueryRow(sql, m.Message, m.ParseMode, m.ChatID, m.BotID, m.UserID, m.IsSuccess, m.Err)
 	if err := row.Scan(&m.ID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func CountMessagesTotal(isSuccess int) int {
+
+	sql := `
+
+        SELECT COUNT(*) 
+          FROM messages
+         WHERE is_success = $1
+
+    `
+
+	var cnt int
+	row := io.GetPg().Conn.QueryRow(sql, isSuccess)
+	if err := row.Scan(&cnt); err != nil {
+		return 0
+	}
+
+	return cnt
+}
+
+func CountMessagesToday(isSuccess int) int {
+
+	sql := `
+
+        SELECT COUNT(*) 
+          FROM messages
+         WHERE is_success = $1 
+           AND ctime > now() - interval '1 day'
+
+    `
+
+	var cnt int
+	row := io.GetPg().Conn.QueryRow(sql, isSuccess)
+	if err := row.Scan(&cnt); err != nil {
+		return 0
+	}
+
+	return cnt
+}
+
+func (m *Message) validate() error {
+	if m.Message == "" {
+		return errors.New("`Message` is required")
+	}
+
+	if m.ChatID == 0 {
+		return errors.New("`ChatID` is required")
+	}
+
+	if m.BotID == 0 {
+		return errors.New("`BotID` is required")
+	}
+
+	if m.UserID == 0 {
+		return errors.New("`UserID` is required")
 	}
 
 	return nil

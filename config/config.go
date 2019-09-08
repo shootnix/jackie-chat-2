@@ -28,9 +28,14 @@ type Config struct {
 		Info  string `json:"info"`
 	}
 	Queue struct {
-		Size               int      `json:"size"`
-		WorkerTimeInterval int      `json:"worker_time_interval"`
-		Workers            []string `json:"workers"`
+		Size               int `json:"size"`
+		WorkerTimeInterval int `json:"worker_time_interval"`
+		//Workers            []string `json:"workers"`
+		Workers []struct {
+			Name         string `json:"name"`
+			Type         string `json:"type"`
+			TimeInterval int    `json:"time_interval"`
+		}
 	}
 }
 

@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"github.com/shootnix/jackie-chat-2/entity"
 	"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
@@ -9,20 +10,53 @@ import (
 	"time"
 )
 
-type Worker struct {
+type Poster struct {
 	timeInterval time.Duration
 	Name         string
 }
 
-func NewWorker(timeInt time.Duration, name string) *Worker {
-	w := new(Worker)
-	w.timeInterval = timeInt
+type Reporter struct {
+	timeInterval time.Duration
+	Name         string
+}
+
+type Worker interface {
+	Run()
+}
+
+func NewPoster(name string, timeInt time.Duration) *Poster {
+	w := new(Poster)
 	w.Name = name
+	w.timeInterval = timeInt
 
 	return w
 }
 
-func (w *Worker) Run() {
+func NewReporter(name string, timeInt time.Duration) *Reporter {
+	w := new(Reporter)
+	w.Name = name
+	w.timeInterval = timeInt
+
+	return w
+}
+
+func NewWorker(wName, wType string, timeInt time.Duration) Worker {
+	log := logger.GetLogger()
+
+	log.Debug("worker type " + wType)
+
+	switch wType {
+	case "reporter":
+		return NewReporter(wName, timeInt)
+	case "poster":
+		return NewPoster(wName, timeInt)
+	default:
+		log.Fatal("Unknown worker type: " + wType)
+		return nil
+	}
+}
+
+func (w *Poster) Run() {
 	q := queue.GetQueue()
 	for _ = range time.Tick(w.timeInterval) {
 		if ID := <-q; ID != 0 {
@@ -32,7 +66,37 @@ func (w *Worker) Run() {
 	}
 }
 
-func (w *Worker) sendTgmMessage(id int64) {
+func (w *Reporter) Run() {
+	log := logger.GetLogger()
+	// Jackie Chat Daily chat id: -335599048
+	u, err := entity.FindUser("Paolo")
+	if err != nil {
+		log.Fatal("Can't fild user for reporter: " + err.Error())
+	}
+	for _ = range time.Tick(w.timeInterval) {
+		messagesSendTotal := entity.CountMessagesTotal(1)
+		messagesSendToday := entity.CountMessagesToday(1)
+		messagesFailToday := entity.CountMessagesToday(0)
+		messagesFailTotal := entity.CountMessagesTotal(0)
+
+		msg := fmt.Sprintf("Send Today: <b>%d</b>\nSend Total: <b>%d</b>\n", messagesSendToday, messagesSendTotal)
+		msg = msg + fmt.Sprintf("Fail Today: <b>%d</b>\nFail Total: <b>%d</b>\n", messagesFailToday, messagesFailTotal)
+
+		m := entity.NewMessage()
+		m.Message = msg
+		m.ChatID = -335599048
+		m.BotID = 1
+		m.UserID = u.ID
+		m.ParseMode = "html"
+
+		if err := m.Insert(); err != nil {
+			log.Fatal("Can't insert message: " + err.Error())
+		}
+		m.Send("Telegram")
+	}
+}
+
+func (w *Poster) sendTgmMessage(id int64) {
 	log := logger.GetLogger()
 	log.Debug(w.Name + ": SENDING MESSAGE: " + strconv.FormatInt(id, 10))
 	m, err := entity.GetMessage(id)

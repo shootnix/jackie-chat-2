@@ -72,7 +72,7 @@ func AuthRequired() gin.HandlerFunc {
 			}
 			if !tkn.Valid {
 
-				log.Debug("Invlalid toke")
+				log.Debug("Invlalid token")
 
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong Token"})
 				c.Abort()

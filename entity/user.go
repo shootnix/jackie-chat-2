@@ -1,7 +1,10 @@
 package entity
 
 import (
+	"errors"
 	"github.com/shootnix/jackie-chat-2/io"
+	"github.com/shootnix/jackie-chat-2/logger"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -17,21 +20,38 @@ func LoginUser(name, password string) (*User, error) {
 	u := new(User)
 	sql := `
 
-        SELECT id, name, default_bot
+        SELECT id, name, default_bot, password
           FROM users u 
          WHERE is_deleted = false
            AND is_active = true
            AND name = $1
-           AND password = $2
 
     `
+	log := logger.GetLogger()
 
-	row := io.GetPg().Conn.QueryRow(sql, name, password)
-	if err := row.Scan(&u.ID, &u.Name, &u.DefaultBot); err != nil {
+	hashPwd, _ := hashPassword("12345")
+	log.Debug("password = " + hashPwd)
+
+	row := io.GetPg().Conn.QueryRow(sql, name)
+	if err := row.Scan(&u.ID, &u.Name, &u.DefaultBot, &u.Password); err != nil {
 		return u, err
 	}
 
+	if chechPassword(u.Password, password) == false {
+		return u, errors.New("Wrong Credentials")
+	}
+
 	return u, nil
+}
+
+func hashPassword(pass string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(pass), 14)
+	return string(bytes), err
+}
+
+func chechPassword(hash, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func FindUser(name string) (*User, error) {
