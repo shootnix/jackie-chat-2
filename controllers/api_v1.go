@@ -42,6 +42,14 @@ func Ping(c *gin.Context) {
 func AuthRequired() gin.HandlerFunc {
 
 	log := logger.GetLogger()
+	m := entity.NewMessage()
+	m.ChatID = -335599048 // Jackie Chat Daily
+	sender, _ := entity.FindUser("Paolo")
+
+	m.BotID = sender.DefaultBot
+	m.UserID = sender.ID
+	//m.Message = "Auth Required"
+	//m.Insert()
 
 	return func(c *gin.Context) {
 
@@ -60,6 +68,9 @@ func AuthRequired() gin.HandlerFunc {
 			if err != nil {
 
 				log.Debug("Got error while checking bearer token: " + err.Error())
+				m.Message = "Got someone's wrong bearer token!"
+				m.Insert()
+				m.Send("telegram")
 
 				if err == jwt.ErrSignatureInvalid {
 					c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong Token"})
@@ -73,6 +84,9 @@ func AuthRequired() gin.HandlerFunc {
 			if !tkn.Valid {
 
 				log.Debug("Invlalid token")
+				m.Message = claims.Username + " has been send invalid auth token!"
+				m.Insert()
+				m.Send("telegram")
 
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong Token"})
 				c.Abort()
@@ -81,6 +95,9 @@ func AuthRequired() gin.HandlerFunc {
 			//c.Set("Username", claims.Username)
 			u, err := entity.FindUser(claims.Username)
 			if err != nil {
+				m.Message = "Can't find user with username " + claims.Username
+				m.Insert()
+				m.Send("telegram")
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 				c.Abort()
 				return
@@ -90,6 +107,10 @@ func AuthRequired() gin.HandlerFunc {
 
 			c.Set("User", u)
 		} else {
+			m.Message = "Someone trying to reach method without authorization"
+			m.Insert()
+			m.Send("telegram")
+
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization Required"})
 			c.Abort()
 			return
@@ -102,14 +123,30 @@ func Auth(c *gin.Context) {
 
 	log := logger.GetLogger()
 
+	m := entity.NewMessage()
+	m.ChatID = -335599048 // Jackie Chat Daily
+	sender, _ := entity.FindUser("Paolo")
+	m.BotID = sender.DefaultBot
+	m.UserID = sender.ID
+
 	var creds Credentials
 	if err := c.ShouldBindJSON(&creds); err != nil {
+
+		log.Debug("[Auth]: Error - " + err.Error())
+		m.Message = "Trying to fire up login: " + err.Error()
+		m.Insert()
+		m.Send("telegram")
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	_, err := entity.LoginUser(creds.Username, creds.Password)
 	if err != nil {
+		m.Message = "Trying to log in user " + creds.Username + ": " + err.Error()
+		m.Insert()
+		m.Send("telegram")
+
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong Credentials"})
 		return
 	}
@@ -127,6 +164,10 @@ func Auth(c *gin.Context) {
 	// Create the JWT string
 	tokenString, err := token.SignedString(config.GetConfig().JWTKey)
 	if err != nil {
+		m.Message = "error while trying to create token string: " + err.Error()
+		m.Insert()
+		m.Send("telegram")
+
 		log.Debug("Error = " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown Error"})
 		return

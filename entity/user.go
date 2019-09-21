@@ -29,8 +29,8 @@ func LoginUser(name, password string) (*User, error) {
     `
 	log := logger.GetLogger()
 
-	hashPwd, _ := hashPassword("12345")
-	log.Debug("password = " + hashPwd)
+	hashPwd, _ := hashPassword(password)
+	log.Debug("password `" + password + "` = " + hashPwd)
 
 	row := io.GetPg().Conn.QueryRow(sql, name)
 	if err := row.Scan(&u.ID, &u.Name, &u.DefaultBot, &u.Password); err != nil {
