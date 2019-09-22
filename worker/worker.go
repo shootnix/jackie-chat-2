@@ -2,6 +2,7 @@ package worker
 
 import (
 	"fmt"
+	"github.com/shootnix/jackie-chat-2/constant"
 	"github.com/shootnix/jackie-chat-2/entity"
 	"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
@@ -99,7 +100,7 @@ func (w *Reporter) Run() {
 
 		m := entity.NewMessage()
 		m.Message = msg
-		m.ChatID = -335599048
+		m.ChatID = constant.JACKIE_CHAT_DAILY
 		m.BotID = 1
 		m.UserID = u.ID
 		m.ParseMode = "html"

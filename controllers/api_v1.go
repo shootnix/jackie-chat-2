@@ -4,6 +4,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/shootnix/jackie-chat-2/config"
+	"github.com/shootnix/jackie-chat-2/constant"
 	"github.com/shootnix/jackie-chat-2/entity"
 	"github.com/shootnix/jackie-chat-2/logger"
 	"net/http"
@@ -43,13 +44,11 @@ func AuthRequired() gin.HandlerFunc {
 
 	log := logger.GetLogger()
 	m := entity.NewMessage()
-	m.ChatID = -335599048 // Jackie Chat Daily
+	m.ChatID = constant.JACKIE_CHAT_DAILY // Jackie Chat Daily
 	sender, _ := entity.FindUser("Paolo")
 
 	m.BotID = sender.DefaultBot
 	m.UserID = sender.ID
-	//m.Message = "Auth Required"
-	//m.Insert()
 
 	return func(c *gin.Context) {
 
@@ -124,7 +123,7 @@ func Auth(c *gin.Context) {
 	log := logger.GetLogger()
 
 	m := entity.NewMessage()
-	m.ChatID = -335599048 // Jackie Chat Daily
+	m.ChatID = constant.JACKIE_CHAT_DAILY
 	sender, _ := entity.FindUser("Paolo")
 	m.BotID = sender.DefaultBot
 	m.UserID = sender.ID
