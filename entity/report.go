@@ -16,15 +16,19 @@ func NewReport() *Report {
 	return r
 }
 
-func (r *Report) AppendMessagesTotal(isSuccess int) {
-	total := CountMessagesTotal(isSuccess)
-	text := fmt.Sprintf("Send Total: <b>%d</b>\n", total)
+func (r *Report) AppendMessagesTotal() {
+	success := CountMessagesTotal(1)
+	failed := CountMessagesTotal(0)
+	text := fmt.Sprintf("Send total: <b>%d</b>\n<code>Fail total: %d</code>\n", success, failed)
+
 	r.Text = r.Text + text
 }
 
-func (r *Report) AppendMessagesToday(isSuccess int) {
-	total := CountMessagesToday(isSuccess)
-	text := fmt.Sprintf("Send Today: <b>%d</b>\n", total)
+func (r *Report) AppendMessagesToday() {
+	success := CountMessagesToday(1)
+	failed := CountMessagesToday(0)
+	text := fmt.Sprintf("Send Today: <b>%d</b>\n<code>Fail today: %d</code>\n", success, failed)
+
 	r.Text = r.Text + text
 }
 

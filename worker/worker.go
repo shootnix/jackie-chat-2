@@ -85,14 +85,9 @@ func (w *Poster) Run() {
 func (w *Reporter) Run() {
 	for _ = range time.Tick(w.timeInterval) {
 		report := entity.NewReport()
-		report.AppendMessagesTotal(1)
-		report.AppendMessagesToday(1)
+		report.AppendMessagesTotal()
+		report.AppendMessagesToday()
 		report.Send()
-
-		reportFail := entity.NewReport()
-		reportFail.AppendMessagesTotal(0)
-		reportFail.AppendMessagesToday(0)
-		reportFail.Send()
 	}
 }
 
