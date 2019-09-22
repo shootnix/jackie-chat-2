@@ -120,28 +120,31 @@ func (w *Checker) Run() {
 		SELECT id 
 		  FROM messages
 		 WHERE is_success = -1
+		   AND now() - ctime > interval '1 hour'
 		 ORDER BY ctime DESC
 
 	`
 
-	rows, err := io.GetPg().Conn.Query(sql)
-	if err != nil {
-		log.Error("Can't execute query " + sql + ": " + err.Error())
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int64
-		if err := rows.Scan(&id); err != nil {
-			log.Error("Can't get message id: " + err.Error())
-			continue
-		}
-		m, err := entity.GetMessage(id)
+	for _ = range time.Tick(w.timeInterval) {
+		rows, err := io.GetPg().Conn.Query(sql)
 		if err != nil {
-			log.Error("Can't get message by id: " + err.Error())
-			continue
+			log.Error("Can't execute query " + sql + ": " + err.Error())
 		}
-		m.Send("telegram")
+		defer rows.Close()
+
+		for rows.Next() {
+			var id int64
+			if err := rows.Scan(&id); err != nil {
+				log.Error("Can't get message id: " + err.Error())
+				continue
+			}
+			m, err := entity.GetMessage(id)
+			if err != nil {
+				log.Error("Can't get message by id: " + err.Error())
+				continue
+			}
+			m.Send("telegram")
+		}
 	}
 }
 
