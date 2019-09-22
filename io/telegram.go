@@ -2,7 +2,6 @@ package io
 
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	//"github.com/shootnix/jackie-chat-2/entity"
 )
 
 type TelegramBotAPI struct {

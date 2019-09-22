@@ -36,7 +36,6 @@ func (r *Report) Send() error {
 	log := logger.GetLogger()
 	u, err := FindUser("Paolo")
 	if err != nil {
-		//log.Fatal("Can't fild user for reporter: " + err.Error())
 		return err
 	}
 

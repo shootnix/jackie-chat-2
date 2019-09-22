@@ -19,7 +19,7 @@ create table messages (
     id serial primary key,
     message text not null,
     parse_mode text not null default 'html',
-    chat_id integer not null,
+    chat_id bigint not null,
     ctime timestamp not null default now(),
     is_success integer not null default -1,
     err text,

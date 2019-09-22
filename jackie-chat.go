@@ -8,7 +8,6 @@ import (
 	"github.com/shootnix/jackie-chat-2/worker"
 	"strconv"
 	"time"
-	//"log"
 )
 
 func main() {
