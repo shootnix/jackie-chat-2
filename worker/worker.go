@@ -1,8 +1,8 @@
 package worker
 
 import (
-	"fmt"
-	"github.com/shootnix/jackie-chat-2/constant"
+	//"fmt"
+	//"github.com/shootnix/jackie-chat-2/constant"
 	"github.com/shootnix/jackie-chat-2/entity"
 	"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
@@ -83,67 +83,25 @@ func (w *Poster) Run() {
 }
 
 func (w *Reporter) Run() {
-	log := logger.GetLogger()
-	// Jackie Chat Daily chat id: -335599048
-	u, err := entity.FindUser("Paolo")
-	if err != nil {
-		log.Fatal("Can't fild user for reporter: " + err.Error())
-	}
 	for _ = range time.Tick(w.timeInterval) {
-		messagesSendTotal := entity.CountMessagesTotal(1)
-		messagesSendToday := entity.CountMessagesToday(1)
-		messagesFailToday := entity.CountMessagesToday(0)
-		messagesFailTotal := entity.CountMessagesTotal(0)
+		report := entity.NewReport()
+		report.AppendMessagesTotal(1)
+		report.AppendMessagesToday(1)
+		report.Send()
 
-		msg := fmt.Sprintf("Send Today: <b>%d</b>\nSend Total: <b>%d</b>\n", messagesSendToday, messagesSendTotal)
-		msg = msg + fmt.Sprintf("Fail Today: <b>%d</b>\nFail Total: <b>%d</b>\n", messagesFailToday, messagesFailTotal)
-
-		m := entity.NewMessage()
-		m.Message = msg
-		m.ChatID = constant.JACKIE_CHAT_DAILY
-		m.BotID = 1
-		m.UserID = u.ID
-		m.ParseMode = "html"
-
-		if err := m.Insert(); err != nil {
-			log.Fatal("Can't insert message: " + err.Error())
-		}
-		m.Send("Telegram")
+		reportFail := entity.NewReport()
+		reportFail.AppendMessagesTotal(0)
+		reportFail.AppendMessagesToday(0)
+		reportFail.Send()
 	}
 }
 
 // Перезабрасывает в очередь письма,
 // которые не отправились почему-то
 func (w *Checker) Run() {
-	log := logger.GetLogger()
-	sql := `
-
-		SELECT id 
-		  FROM messages
-		 WHERE is_success = -1
-		   AND now() - ctime > interval '1 hour'
-		 ORDER BY ctime DESC
-
-	`
-
 	for _ = range time.Tick(w.timeInterval) {
-		rows, err := io.GetPg().Conn.Query(sql)
-		if err != nil {
-			log.Error("Can't execute query " + sql + ": " + err.Error())
-		}
-		defer rows.Close()
-
-		for rows.Next() {
-			var id int64
-			if err := rows.Scan(&id); err != nil {
-				log.Error("Can't get message id: " + err.Error())
-				continue
-			}
-			m, err := entity.GetMessage(id)
-			if err != nil {
-				log.Error("Can't get message by id: " + err.Error())
-				continue
-			}
+		pendingMessages := entity.ListPendingMessages()
+		for _, m := range pendingMessages {
 			m.Send("telegram")
 		}
 	}

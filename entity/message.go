@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 	"github.com/shootnix/jackie-chat-2/io"
 	"github.com/shootnix/jackie-chat-2/logger"
 	"github.com/shootnix/jackie-chat-2/queue"
@@ -156,6 +157,45 @@ func CountMessagesToday(isSuccess int) int {
 	}
 
 	return cnt
+}
+
+func ListPendingMessages() []*Message {
+	log := logger.GetLogger()
+	log.Debug("Trying to get pending messages")
+
+	var list []*Message
+	sql := `
+
+        SELECT id
+          FROM messages
+         WHERE is_success = -1
+           AND now() - ctime > interval '1 hour'
+         ORDER BY ctime DESC
+
+    `
+	rows, err := io.GetPg().Conn.Query(sql)
+	if err != nil {
+		log.Error("Can't execute query " + sql + ": " + err.Error())
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			log.Error("Can't get message id: " + err.Error())
+			continue
+		}
+		m, err := GetMessage(id)
+		if err != nil {
+			log.Error("Can't get message by id: " + err.Error())
+			continue
+		}
+		list = append(list, m)
+	}
+
+	log.Debug(fmt.Sprintf("Got %d pending messages", len(list)))
+
+	return list
 }
 
 func (m *Message) validate() error {
