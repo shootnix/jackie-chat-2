@@ -4,6 +4,9 @@ use Mojo::Util 'secure_compare';
 use POSIX qw/ceil/;
 use utf8;
 
+
+
+app->config(hypnotoad => { listen => ['http://*:8081'] } );
 my $config = plugin 'JSONConfig', { file => '/etc/jackiechat/jackiechat.conf' };
 
 use constant MONTH => {
@@ -134,8 +137,6 @@ helper get_chats_list => sub {
     return $ids;
 };
 
-app->config(hypnotoad => { listen => ['http://*:8081'] } );
-
 helper get_users_list => sub {
     my $self = shift;
 
@@ -144,6 +145,53 @@ helper get_users_list => sub {
     }, { Slice => {} });
 
     return $users;
+};
+
+helper get_poster_of_the_day => sub {
+    my $self = shift;
+
+    my $w = $self->db->selectrow_hashref(q{
+        select count(*) as count, worker_name as name 
+        from journal 
+        where ctime >= now() - interval '1 day'
+        group by worker_name
+        order by count desc limit 1
+    });
+
+    return $w;
+};
+
+helper get_poster_of_the_month => sub {
+    my $self = shift;
+
+    my $w = $self->db->selectrow_hashref(q{
+        select count(*) as count, worker_name as name 
+        from journal 
+        where ctime >= now() - interval '30 day'
+        group by worker_name
+        order by count desc limit 1
+    }, { Slice => {} });
+
+    return $w;
+};
+
+helper get_best_poster => sub {
+    my $self = shift;
+
+    my $w = $self->db->selectrow_hashref(q{
+        select count(*) as count, worker_name as name 
+        from journal 
+        group by worker_name
+        order by count desc limit 1
+    }, { Slice => {} });
+
+    return $w;
+};
+
+helper get_workers_list => sub {
+    my $self = shift;
+
+    return $config->{queue}{workers};
 };
 
 get '/' => sub { shift->redirect_to('/dashboard') };
@@ -451,6 +499,78 @@ __DATA__
             </tr>
         % }
         </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1">our team</div>
+                        % my $list = get_workers_list();
+                        % for my $w (@$list) {
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><%= $w->{name} %> <small>/ <%= $w->{type} %></small></div>
+                        % }
+                    </div>
+                    <div class="col-auto">
+                         <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1">poster of the day</div>
+                        % my $wod = get_poster_of_the_day();
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= $wod->{name} %>: <%= $wod->{count} %></div>
+                    </div>
+                    <div class="col-auto">
+                         <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1">poster of the month</div>
+                        % my $wom = get_poster_of_the_month();
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= $wom->{name} %>: <%= $wom->{count} %></div>
+                    </div>
+                    <div class="col-auto">
+                         <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1">poster of all time</div>
+                        % my $w = get_best_poster();
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= $w->{name} %>: <%= $w->{count} %></div>
+                    </div>
+                    <div class="col-auto">
+                         <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
