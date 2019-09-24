@@ -193,7 +193,7 @@ helper get_workers_list => sub {
     return $config->{queue}{workers};
 };
 
-get '/admin' => sub { shift->redirect_to('/dashboard') };
+get '/admin' => sub { shift->redirect_to('/admin/dashboard') };
 
 get '/admin/dashboard' => sub {
     my $self = shift;
