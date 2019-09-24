@@ -230,13 +230,9 @@ post '/messages/:id' => sub {
 get '/messages' => sub {
     my $self = shift;
 
-    app->log->error("fffffffffff" x 100); die;
-
     my $q = $self->req->params->to_hash();
     my $p  = delete $q->{p} // 1;
     my $today = delete $q->{today};
-
-    warn "qs = " . $self->req->query_params;
 
     my $limit = 100;
     my $offset = ( $p - 1 ) * $limit;
@@ -258,6 +254,8 @@ get '/messages' => sub {
             offset   => $offset,
         }
     );
+
+    $self->req->query_params->remove('p');
     $self->stash->{qs} = $self->req->query_params->to_string;
 
     $self->render('messages');
