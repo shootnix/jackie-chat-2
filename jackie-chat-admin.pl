@@ -2,8 +2,6 @@
 use Mojolicious::Lite;
 use Mojo::Util 'secure_compare';
 use POSIX qw/ceil/;
-#use Mojo::Useragent;
-use Data::Dumper;
 use utf8;
 
 my $config = plugin 'JSONConfig', { file => '/etc/jackiechat/jackiechat.conf' };
@@ -232,9 +230,13 @@ post '/messages/:id' => sub {
 get '/messages' => sub {
     my $self = shift;
 
+    app->log->error("fffffffffff" x 100); die;
+
     my $q = $self->req->params->to_hash();
     my $p  = delete $q->{p} // 1;
     my $today = delete $q->{today};
+
+    warn "qs = " . $self->req->query_params;
 
     my $limit = 100;
     my $offset = ( $p - 1 ) * $limit;
