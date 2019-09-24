@@ -5,7 +5,6 @@ use POSIX qw/ceil/;
 use utf8;
 
 
-
 app->config(hypnotoad => { listen => ['http://*:8081'] } );
 my $config = plugin 'JSONConfig', { file => '/etc/jackiechat/jackiechat.conf' };
 
@@ -194,15 +193,15 @@ helper get_workers_list => sub {
     return $config->{queue}{workers};
 };
 
-get '/' => sub { shift->redirect_to('/dashboard') };
+get '/admin' => sub { shift->redirect_to('/dashboard') };
 
-get '/dashboard' => sub {
+get '/admin/dashboard' => sub {
     my $self = shift;
 
     $self->render('dashboard');
 };
 
-get '/users/:username' => sub {
+get '/admin/users/:username' => sub {
     my $self = shift;
 
     $self->stash->{api_key} = $self->config->{users}{$self->stash->{username}};
@@ -210,7 +209,7 @@ get '/users/:username' => sub {
     $self->render('user');
 };
 
-get '/messages/chart' => sub {
+get '/admin/messages/chart' => sub {
     my $self = shift;
 
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
@@ -242,7 +241,7 @@ get '/messages/chart' => sub {
     });
 };
 
-get '/messages/:id' => sub {
+get '/admin/messages/:id' => sub {
     my $self = shift;
 
     $self->stash->{message} = $self->db->selectrow_hashref(q{
@@ -252,7 +251,7 @@ get '/messages/:id' => sub {
     $self->render('message');
 };
 
-post '/messages/:id' => sub {
+post '/admin/messages/:id' => sub {
     my $self = shift;
 
     my $message = $self->db->selectrow_hashref(q{
@@ -275,7 +274,7 @@ post '/messages/:id' => sub {
     $self->redirect_to('/messages/' . $self->stash->{id});
 };
 
-get '/messages' => sub {
+get '/admin/messages' => sub {
     my $self = shift;
 
     my $q = $self->req->params->to_hash();
@@ -311,7 +310,7 @@ get '/messages' => sub {
 
 
 
-post '/messages/:id/enqueue' => sub {
+post '/admin/messages/:id/enqueue' => sub {
     my $self = shift;
 
     my $message = $self->db->selectrow_hashref(q{
@@ -330,7 +329,7 @@ post '/messages/:id/enqueue' => sub {
     $self->redirect_to('/messages/' . $self->stash->{id});
 };
 
-post '/messages/:id/delete' => sub {
+post '/admin/messages/:id/delete' => sub {
     my $self = shift;
 
     $self->db->do('delete from messages where id = ?', undef, $self->stash->{id});
