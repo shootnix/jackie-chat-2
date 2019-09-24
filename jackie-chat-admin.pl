@@ -271,7 +271,7 @@ post '/admin/messages/:id' => sub {
          where id = ?
     }, undef, $self->req->param('message'), $self->stash->{id});
 
-    $self->redirect_to('/messages/' . $self->stash->{id});
+    $self->redirect_to('/admin/messages/' . $self->stash->{id});
 };
 
 get '/admin/messages' => sub {
@@ -326,14 +326,14 @@ post '/admin/messages/:id/enqueue' => sub {
          where id = ? 
     }, undef, $self->stash->{id});
 
-    $self->redirect_to('/messages/' . $self->stash->{id});
+    $self->redirect_to('/admin/messages/' . $self->stash->{id});
 };
 
 post '/admin/messages/:id/delete' => sub {
     my $self = shift;
 
     $self->db->do('delete from messages where id = ?', undef, $self->stash->{id});
-    $self->redirect_to('/');
+    $self->redirect_to('/admin');
 };
 
 app->start;
@@ -372,7 +372,7 @@ __DATA__
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1"><a href="/messages" class="text-primary">Total Sent</a></div>
+                        <div class="text-xs font-weight-bold text-uppercase text-primary mb-1"><a href="/admin/messages" class="text-primary">Total Sent</a></div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800"><%= count_messages({ is_success => ['!=', '-1'] }) %></div>
                     </div>
                     <div class="col-auto">
@@ -389,7 +389,7 @@ __DATA__
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1"><a href="/messages?is_success=1" class="text-success">Success Sent</a></div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1"><a href="/admin/messages?is_success=1" class="text-success">Success Sent</a></div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800"><%= count_messages({ is_success => 1 }) %></div>
                     </div>
                     <div class="col-auto">
@@ -406,7 +406,7 @@ __DATA__
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1"><a href="/messages?today=1" class="text-info">Today</a></div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1"><a href="/admin/messages?today=1" class="text-info">Today</a></div>
                         <div class="row no-gutters align-items-center">
                             <div class="col-auto">
                                 <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><%= count_messages({ ctime => [">", "now() - interval '1 day'"] }) %></div>
@@ -427,7 +427,7 @@ __DATA__
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1"><a href="/messages?is_success=-1" class="text-warning">Pending Requests</a></div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1"><a href="/admin/messages?is_success=-1" class="text-warning">Pending Requests</a></div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800"><%= count_messages({ is_success => -1 }) %></div>
                     </div>
                     <div class="col-auto">
@@ -470,11 +470,11 @@ __DATA__
             </tr>
         % for my $user ($users->@*) {
             <tr>
-                <td><a href="/messages?user_id=<%= $user->{id} %>"><%= $user->{name} %></a></td>
-                <td class="text-right"><a href="/messages?user_id=<%= $user->{id} %>"><%= count_messages({ user_id => $user->{id}, is_success => ['!=', '-1'] }) %></a></td>
-                <td class="text-right"><a href="/messages?user_id=<%= $user->{id} %>&is_success=1"><%= count_messages({ user_id => $user->{id}, is_success => 1 }) %></a></td>
-                <td class="text-right"><a href="/messages?user_id=<%= $user->{id} %>&today=1"><%= count_messages({ user_id => $user->{id}, ctime => [">", "now() - interval '1 day'"] }) %></a></td>
-                <td class="text-right"><a href="/messages?user_id=<%= $user->{id} %>&is_success=-1"><%= count_messages({ user_id => $user->{id}, is_success => -1 }) %></a></td>
+                <td><a href="/admin/messages?user_id=<%= $user->{id} %>"><%= $user->{name} %></a></td>
+                <td class="text-right"><a href="/admin/messages?user_id=<%= $user->{id} %>"><%= count_messages({ user_id => $user->{id}, is_success => ['!=', '-1'] }) %></a></td>
+                <td class="text-right"><a href="/admin/messages?user_id=<%= $user->{id} %>&is_success=1"><%= count_messages({ user_id => $user->{id}, is_success => 1 }) %></a></td>
+                <td class="text-right"><a href="/admin/messages?user_id=<%= $user->{id} %>&today=1"><%= count_messages({ user_id => $user->{id}, ctime => [">", "now() - interval '1 day'"] }) %></a></td>
+                <td class="text-right"><a href="/admin/messages?user_id=<%= $user->{id} %>&is_success=-1"><%= count_messages({ user_id => $user->{id}, is_success => -1 }) %></a></td>
             </tr>
         % }
         </table>
@@ -491,10 +491,10 @@ __DATA__
             </tr>
         % for my $id (@$chats) {
             <tr>
-                <td><a href="/messages?chat_id=<%= $id %>"><%= id2chatname($id) %></a></td>
-                <td class="text-right"><a href="/messages?chat_id=<%= $id %>&is_success=1"><%= count_messages({ chat_id => $id, is_success => 1 }) %></a></td>
-                <td class="text-right"><a href="/messages?chat_id=<%= $id %>&today=1"><%= count_messages({ chat_id => $id, ctime => [">", "now() - interval '1 day'"] }) %></a></td>
-                <td class="text-right"><a href="/messages?chat_id=<%= $id %>&is_success=-1"><%= count_messages({ chat_id => $id, is_success => -1 }) %></a></td>
+                <td><a href="/admin/messages?chat_id=<%= $id %>"><%= id2chatname($id) %></a></td>
+                <td class="text-right"><a href="/admin/messages?chat_id=<%= $id %>&is_success=1"><%= count_messages({ chat_id => $id, is_success => 1 }) %></a></td>
+                <td class="text-right"><a href="/admin/messages?chat_id=<%= $id %>&today=1"><%= count_messages({ chat_id => $id, ctime => [">", "now() - interval '1 day'"] }) %></a></td>
+                <td class="text-right"><a href="/admin/messages?chat_id=<%= $id %>&is_success=-1"><%= count_messages({ chat_id => $id, is_success => -1 }) %></a></td>
             </tr>
         % }
         </table>
@@ -578,7 +578,7 @@ __DATA__
         var ctx = document.getElementById('myAreaChart').getContext('2d');
         jQuery.ajax({
             //method: 'get',
-            url: '/messages/chart',
+            url: '/admin/messages/chart',
             success: function(res) {
                 var chart = new Chart(ctx, {
                     // The type of chart we want to create
@@ -619,7 +619,7 @@ __DATA__
     <div class="col-xl-12 col-md-24 mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Messages</li>
             </ol>
         </nav>
@@ -679,10 +679,10 @@ __DATA__
             </tr>
         % for my $msg (@$messages) {
             <tr>
-                <td><a href="/messages/<%= $msg->{id} %>"><%= $msg->{id} %></a></td>
+                <td><a href="/admin/messages/<%= $msg->{id} %>"><%= $msg->{id} %></a></td>
                 <td><%= id2username($msg->{user_id}) %></td>
                 <td><%= id2chatname($msg->{chat_id}) %></td>
-                <td><a href="/messages/<%= $msg->{id} %>"><%= $msg->{ctime} %></a></td>
+                <td><a href="/admin/messages/<%= $msg->{id} %>"><%= $msg->{ctime} %></a></td>
                 <td>
                     % my $class = $msg->{is_success} ? 'badge-success' : 'badge-danger';
                     % $class = 'badge-warning' if $msg->{is_success} eq '-1';
@@ -709,7 +709,7 @@ __DATA__
                     </li>
             %   }
             %   else {
-                    <li class="page-item"><a class="page-link" href='<%= $qs ? "/messages?$qs&p=$page_num" : "/messages?p=$page_num" %>'><%= $page_num %></a></li>
+                    <li class="page-item"><a class="page-link" href='<%= $qs ? "/admin/messages?$qs&p=$page_num" : "/admin/messages?p=$page_num" %>'><%= $page_num %></a></li>
             %   }
             % }
             </ul>
@@ -768,8 +768,8 @@ __DATA__
     <div class="col-xl-12 col-md-24 mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item" aria-current="/messages"><a href="/messages">Messages</a></li>
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item" aria-current="/admin/messages"><a href="/admin/messages">Messages</a></li>
                 <li class="breadcrumb-item active">View</li>
             </ol>
         </nav>
@@ -791,7 +791,7 @@ __DATA__
         <hr class="bg-danger" />
         <h5 class="text-danger">Not sent:</h5>
         <div class="alert alert-danger p-3"><%= $message->{err} || 'Unknown Error' %></div>
-        <form method="post" action="/messages/<%= $message->{id} %>/enqueue">
+        <form method="post" action="/admin/messages/<%= $message->{id} %>/enqueue">
             <button type="submit" class="btn btn-danger float-right btn-sm">Enqueue</button>
         </form>
     % }
